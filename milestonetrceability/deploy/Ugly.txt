@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Milestone Traceability</title>
+    <!--  (c) 2017 CA Technologies.  All Rights Reserved. -->
+    <!--  Build Date: Thu Aug 03 2017 13:31:53 GMT-0700 (PDT) -->
+    
+    <script type="text/javascript">
+        var APP_BUILD_DATE = "Thu Aug 03 2017 13:31:53 GMT-0700 (PDT)";
+        var STORY    = "US1684";
+        var BUILDER  = "marjo60";
+        var CHECKSUM = 3817491677;
+    </script>
+    
+    <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
+    <!-- our highcharts (needed so that we can add patterns) 
+    <script type="text/javascript" src="/apps/2.1/lib/analytics/analytics-all.js"></script>
+    -->
+    
+    
+    <script type="text/javascript">
+        Rally.onReady(function() {
+            Ext.define("Rally.technicalservices.InfoLink",{extend:"Rally.ui.dialog.Dialog",alias:"widget.tsinfolink",informationHtml:null,title:"Build Information",defaults:{padding:5,margin:5},closable:!0,draggable:!0,autoShow:!0,width:350,informationalConfig:null,items:[{xtype:"container",itemId:"information"}],initComponent:function(){Ext.id(this);this.title="<span class='icon-help'> </span>"+this.title,this.callParent(arguments)},_generateChecksum:function(a){var b,c=305419896;for(a=a.replace(/var CHECKSUM = .*;/,""),a=a.replace(/var BUILDER  = .*;/,""),a=a.replace(/\s/g,""),b=0;b<a.length;b++)c+=a.charCodeAt(b)*b;return c},_checkChecksum:function(a){var b=Ext.create("Deft.Deferred"),c=this;return Ext.Ajax.request({url:document.URL,params:{id:1},success:function(a){if(text=a.responseText,CHECKSUM){var d=c._generateChecksum(text);if(CHECKSUM!==d)return void b.resolve(!1)}b.resolve(!0)}}),b.promise},_addToContainer:function(a){var b=Ext.apply({xtype:"container",height:200,overflowY:!0},this.informationalConfig);a.add(b)},afterRender:function(){var a=Rally.getApp();if(!Ext.isEmpty(this.informationalConfig)){var b=this.down("#information");this._addToContainer(b)}a.isExternal()?this.addDocked({xtype:"container",cls:"build-info",padding:2,dock:"bottom",html:"... Running externally"}):this._checkChecksum(a).then({scope:this,success:function(a){a||this.addDocked({xtype:"container",cls:"build-info",dock:"bottom",padding:2,html:'<span class="icon-warning"> </span>Checksums do not match'})},failure:function(a){console.log("oops:",a)}}),this.callParent(arguments)},beforeRender:function(){if(this.callParent(arguments),this.informationHtml&&this.addDocked({xtype:"component",componentCls:"intro-panel",padding:2,html:this.informationHtml,doc:"top"}),this.addDocked({xtype:"container",cls:"build-info",padding:2,dock:"bottom",html:"This app was created by the CA AC Technical Services Team."}),APP_BUILD_DATE){var a=Ext.String.format("Built on: {0} <br/>Built by: {1}",APP_BUILD_DATE,BUILDER);STORY&&(a=a+"<br/>Source story: "+STORY),this.addDocked({xtype:"container",cls:"build-info",padding:2,dock:"bottom",html:a})}}}),Ext.define("Rally.technicalservices.Logger",{constructor:function(a){Ext.apply(this,a)},log:function(a){var b="[ "+Ext.util.Format.date(new Date,"Y-m-d H:i:s.u")+" ]",c=[];c=Ext.Array.push(c,[b]),c=Ext.Array.push(c,Ext.Array.slice(arguments,0)),window.console&&console.log.apply(console,c)}}),Ext.define("CArABU.container.TraceabilityContainer",{extend:"Ext.container.Container",alias:"widget.tstraceabilitycontainer",layout:{type:"vbox",align:"stretch"},margin:5,padding:5,config:{artifacts:[]},constructor:function(a){a=a||{},this.mergeConfig(a),this.callParent([this.config])},beforeRender:function(){this.callParent(arguments),this._buildItems()},_hasChildren:function(a){return!Ext.isEmpty(a.get("__defects"))||!Ext.isEmpty(a.get("__tasks"))||!Ext.isEmpty(a.get("__testcases"))},_buildItems:function(){0===this.artifacts.length&&this.add({xtype:"container",html:"No User Stories assigned."});var a=this._getArtifactSummaryTemplate();Ext.Array.each(this.artifacts,function(b){var c=this.add({xtype:"container",margin:5,padding:5});c.add({xtype:"container",html:a.apply(b.getData()),defaults:{margins:5,padding:5}});var d=c.add({xtype:"container",html:"",defaults:{margins:5,padding:5}});if(this._hasChildren(b)){var e=c.add({xtype:"container",layout:"hbox",defaults:{margin:5,padding:5},html:""});e.add(this._getGridFor("task",b)),e.add(this._getGridFor("defect",b)),e.add(this._getGridFor("testcase",b))}else d.update("No Children Artifacts")},this)},_getArtifactSummaryTemplate:function(){return new Ext.XTemplate("<b>{FormattedID} {Name}</b> - ( Plan Estimate: {PlanEstimate} ) - {ScheduleState}")},_getGridFor:function(a,b){var c="__"+a+"s",d=this._getColumns(a),e=Ext.create("Rally.data.custom.Store",{data:b.get(c)});return{xtype:"rallygrid",columnCfgs:d,store:e,flex:1,showPagingToolbar:!1,showRowActionsColumn:!1}},_getColumns:function(a){var b={task:"State",defect:"State",testcase:"LastVerdict"},c=[{dataIndex:"FormattedID",text:"ID - Name",flex:1,renderer:function(a,b,c){return c.get("FormattedID")+" - "+c.get("Name")}},{dataIndex:b[a],text:"State"}];return c}}),Ext.define("TSMilestoneTraceability",{extend:"Rally.app.App",componentCls:"app",logger:new Rally.technicalservices.Logger,defaults:{margin:10},items:[{xtype:"container",itemId:"selector_box"},{xtype:"container",itemId:"display_box"}],integrationHeaders:{name:"TSMilestoneTraceability"},launch:function(){this._addSelectors(this.down("#selector_box"))},_addSelectors:function(a){a.add({xtype:"rallymilestonecombobox",listeners:{scope:this,change:this._updateData}})},_updateData:function(a){var b=this.down("#display_box"),c=this,d=a.getRecord();this.setLoading("Loading items related to "+d.get("_refObjectName")),b.removeAll(),Deft.Chain.sequence([function(){return c._loadAssociatedStories(d)},function(){return c._loadAssociatedChildDefects(d)},function(){return c._loadAssociatedChildTestCases(d)},function(){return c._loadAssociatedChildTasks(d)}],this).then({success:function(a){var c=a[0],d=a[1],e=a[2];tasks_by_parent=a[3],0===c.length&&b.add({xtype:"container",html:""}),Ext.Array.each(c,function(a){var b=a.get("ObjectID");a.set("__defects",d[b]||[]),a.set("__testcases",e[b]||[]),a.set("__tasks",tasks_by_parent[b]||[])}),b.add({xtype:"tstraceabilitycontainer",artifacts:c})},failure:function(a){Ext.Msg.alert("Problem Loading Data",a)},scope:this}).always(function(){c.setLoading(!1)})},_loadAssociatedStories:function(a){var b={model:"HierarchicalRequirement",fetch:["ObjectID","Name","FormattedID","ScheduleState","PlanEstimate"],filters:[{property:"Milestones",operator:"contains",value:a.get("_ref")}],limit:1/0,pageSize:2e3};return this._loadWsapiRecords(b)},_loadAssociatedChildDefects:function(a){var b=Ext.create("Deft.Deferred"),c="Requirement",d={model:"Defect",fetch:["ObjectID","Name","FormattedID","State","PlanEstimate",c],filters:[{property:c+".Milestones",operator:"contains",value:a.get("_ref")}],limit:1/0,pageSize:2e3};return this._loadWsapiRecords(d).then({success:function(a){var d={};Ext.Array.each(a,function(a){var b=a.get(c).ObjectID;Ext.isEmpty(d[b])&&(d[b]=[]),d[b].push(a)}),b.resolve(d)},failure:function(a){b.reject(a)},scope:this}),b.promise},_loadAssociatedChildTestCases:function(a){var b=Ext.create("Deft.Deferred"),c="WorkProduct",d={model:"TestCase",fetch:["ObjectID","Name","FormattedID","LastVerdict",c],filters:[{property:c+".Milestones",operator:"contains",value:a.get("_ref")}],limit:1/0,pageSize:2e3};return this._loadWsapiRecords(d).then({success:function(a){var d={};Ext.Array.each(a,function(a){var b=a.get(c).ObjectID;Ext.isEmpty(d[b])&&(d[b]=[]),d[b].push(a)}),b.resolve(d)},failure:function(a){b.reject(a)},scope:this}),b.promise},_loadAssociatedChildTasks:function(a){var b=Ext.create("Deft.Deferred"),c="WorkProduct",d={model:"Task",fetch:["ObjectID","Name","FormattedID","State",c],filters:[{property:c+".Milestones",operator:"contains",value:a.get("_ref")}],limit:1/0,pageSize:2e3};return this._loadWsapiRecords(d).then({success:function(a){var d={};Ext.Array.each(a,function(a){var b=a.get(c).ObjectID;Ext.isEmpty(d[b])&&(d[b]=[]),d[b].push(a)}),b.resolve(d)},failure:function(a){b.reject(a)},scope:this}),b.promise},_loadWsapiRecords:function(a){var b=Ext.create("Deft.Deferred"),c=this,d={model:"Defect",fetch:["ObjectID"]};return this.logger.log("Starting load:",a.model),Ext.create("Rally.data.wsapi.Store",Ext.Object.merge(d,a)).load({callback:function(a,d,e){e?b.resolve(a):(c.logger.log("Failed: ",d),b.reject("Problem loading: "+d.error.errors.join(". ")))}}),b.promise},getOptions:function(){return[{text:"About...",handler:this._launchInfo,scope:this}]},_launchInfo:function(){this.about_dialog&&this.about_dialog.destroy(),this.about_dialog=Ext.create("Rally.technicalservices.InfoLink",{})},isExternal:function(){return"undefined"==typeof this.getAppId()}});
+            
+               Rally.launchApp('TSMilestoneTraceability', {
+                   name: 'Milestone Traceability'
+               });
+        });
+    </script>
+    
+    <style type="text/css">
+
+.app {
+}
+.tsinfolink {
+    position:absolute;
+    right:0px;
+    width: 14px;
+    height: 14px;
+    border-radius: 7px;
+    text-align: center;
+    color: white;
+    background: #C0C0C0;
+    border-style: solid;
+    border-width: 1px;
+    margin-top: 25px;
+    margin-right: 5px;
+    cursor: pointer;
+}
+    </style>
+
+</head>
+<body></body>
+</html>
