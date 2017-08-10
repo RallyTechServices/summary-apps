@@ -80,7 +80,16 @@ Ext.define('CArABU.container.TraceabilityContainer',{
     },
 
     _getArtifactSummaryTemplate: function() {
-        return new Ext.XTemplate('<b>{FormattedID} {Name}</b> - ( Plan Estimate: {PlanEstimate} ) - {ScheduleState}');
+        return new Ext.XTemplate('<a target="_top" href="{[this.getUrl(values)]}">{FormattedID} {Name}</a>' +
+            ' - ( Plan Estimate: {PlanEstimate} )' +
+            ' - {ScheduleState}',
+            {
+                getUrl: function(object) {
+                    console.log(object);
+                    return Rally.nav.Manager.getDetailUrl(object);
+                }
+            }
+        );
     },
 
     _getGridFor: function(type,artifact){
@@ -120,7 +129,13 @@ Ext.define('CArABU.container.TraceabilityContainer',{
                 text:header_text[type] + ' ID - Name',
                 flex: 1,
                 renderer: function(value,meta,record){
-                    return record.get('FormattedID') + ' - ' + record.get('Name');
+                    var link = Rally.nav.Manager.getDetailUrl(record);
+                    
+                    return Ext.String.format('<a target="_top" href="{0}">{1} - {2}</a>',
+                        link,
+                        record.get('FormattedID'),
+                        record.get('Name')
+                    );
                 }
             },
             {dataIndex:state_fields[type],text:'State'}
