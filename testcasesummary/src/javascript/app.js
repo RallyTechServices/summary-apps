@@ -33,7 +33,7 @@ Ext.define("TSTestCaseSummary", {
 
         this._addFilter(this.down('#selector_box'));
 
-        if ( !timeboxScope || ( timeboxScope.type != "milestone" )) {
+        if ( !timeboxScope || ( timeboxScope.type != "milestone" && timeboxScope.type != "release" )) {
             this.timebox_type = this.getSetting('timeboxType') || 'milestone';
             this._addTimeboxSelector(this.down('#selector_box'), this.timebox_type );
             return;
@@ -128,39 +128,73 @@ Ext.define("TSTestCaseSummary", {
     },
 
     _fetchTestCases: function(timebox) {
-        var config = {
-            model: 'TestCase',
-            fetch: this.testCaseFetch,
-            filters: this._getTestCaseFilters(timebox),
-            pageSize:2000,
-            limit: 2000,
-            compact: false,
-            groupField: 'Type',
-            getGroupString: function(record) {
-                return record.get('Type') + ' : ' + record.get('Method');
-            }
-        };
+        var me = this,
+            deferred = Ext.create('Deft.Deferred');
 
-        return this._loadWsapiRecords(config);
+        this.logger.log("_fetchTestCases");
+        // getting the filter is a promise because with Releases, we have to go
+        // get the associated items to define the filter
+
+        // this is pipeline so that it's ok that the milestone filter is not
+        // coming off a promise
+        Deft.Chain.pipeline([
+            function() { return me._getTestCaseFilters(timebox); }
+        ],this).then({
+            scope: this,
+            success: function(filters) {
+                this.logger.log("Filters:", filters);
+                var config = {
+                    model: 'TestCase',
+                    fetch: this.testCaseFetch,
+                    filters: filters,
+                    pageSize:2000,
+                    limit: 2000,
+                    compact: false,
+                    groupField: 'Type',
+                    getGroupString: function(record) {
+                        return record.get('Type') + ' : ' + record.get('Method');
+                    }
+                };
+                this._loadWsapiRecords(config).then({
+                    success: function(results) { deferred.resolve(results); },
+                    failure: function(msg) { deferred.reject(msg); }
+                });
+            },
+            failure: function(msg) {
+                deferred.reject(msg);
+            }
+        });
+        return deferred.promise;
     },
 
     _getTestCaseFilters: function(timebox) {
-        var filters = null;
+        var deferred = Ext.create('Deft.Deferred'),
+            filters = null;
 
         var filterButton = this.down('rallyinlinefilterbutton');
         if (filterButton && filterButton.inlineFilterPanel && filterButton.getWsapiFilter()){
             filters = filterButton.getWsapiFilter();
         }
 
-        this.logger.log("Has filter: ", this.filter);
         if ( this.timebox_type == "release" ) {
-            // TODO: This doesn't work.  Use Kristy's method to get releases
-            var release_filter = Rally.data.wsapi.Filter.or([
-                {property:"WorkProduct.Release.Name", value:timebox.get('_refObjectName')},
-                {property:"TestSets.Release.Name",value:timebox.get('_refObjectName')}
-            ]);
-            if ( filters ) { return filters.and(release_filter); }
-            return release_filter;
+            var config = {
+                models: ['UserStory','Defect'],
+                filters: this._getArtifactFilters(timebox),
+                fetch: ['ObjectID']
+            };
+            this._loadArtifactRecords(config).then({
+                success: function(artifacts) {
+                    var oids = Ext.Array.map(artifacts, function(artifact){
+                        return {property:'WorkProduct.ObjectID', value:artifact.get('ObjectID')};
+                    });
+                    var release_filter = Rally.data.wsapi.Filter.or(oids);
+                    if ( filters ) {
+                        deferred.resolve(filters.and(release_filter));
+                    }
+                    deferred.resolve(release_filter);
+                },
+                failure: function(msg) { deferred.reject(msg); }
+            });
         } else {
             // milestone
             var milestone_filter = Rally.data.wsapi.Filter.and([
@@ -169,12 +203,11 @@ Ext.define("TSTestCaseSummary", {
             if ( filters ) { return filters.and(milestone_filter); }
             return milestone_filter;
         }
-
+        return deferred.promise;
     },
 
     _getArtifactFilters: function(timebox) {
         var property = "Release.Name";
-        if ( this.timebox_type == "milestone" ) { property = "Milestones.Name"; }
         return [{property:property,value:timebox.get('_refObjectName')}];
     },
 
@@ -201,7 +234,6 @@ Ext.define("TSTestCaseSummary", {
     },
 
     _updateSummary: function(testcases) {
-        console.log('updateSummary', testcases);
         var cases_run = _.filter(testcases, function(tc){ return tc.get('LastVerdict');});
         this.down('#summary_box').update({casesRun: cases_run.length, totalCases: testcases.length });
     },
@@ -335,6 +367,28 @@ Ext.define("TSTestCaseSummary", {
                 scope: this
             }
         ];
+    },
+
+    getSettingsFields: function() {
+
+        var timebox_store = Ext.create('Ext.data.Store',{
+            fields: ['name','value'],
+            data: [
+                {name:'Release',value:'release'},
+                {name:'Milestone',value:'milestone'}
+            ]
+        });
+
+        return [{
+            name: 'timeboxType',
+            xtype: 'combobox',
+            fieldLabel: 'Timebox Type',
+            queryMode: 'local',
+            displayField: 'name',
+            valueField: 'value',
+            store: timebox_store
+
+        }];
     },
 
     _launchInfo: function() {
