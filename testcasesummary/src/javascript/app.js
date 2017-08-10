@@ -8,7 +8,10 @@ Ext.define("TSTestCaseSummary", {
     },
 
     items: [
-        {xtype:'container',itemId:'selector_box'},
+        {xtype:'container', layout: 'hbox', items: [
+            { xtype: 'container', itemId:'selector_box'},
+            { xtype: 'container', tpl: new CArABU.technicalservices.ProgressBarTemplate({}), itemId: 'summary_box', margin: '0 100 0 100', flex: 1 }
+        ]},
         {xtype:'container',itemId:'display_box'}
     ],
 
@@ -37,6 +40,7 @@ Ext.define("TSTestCaseSummary", {
 
     onTimeboxScopeChange: function(timebox) {
         this.down('#display_box').removeAll();
+        this.down('#summary_box').update({casesRun: 0, totalCases: 0});
         this._updateData(timebox);
     },
 
@@ -73,8 +77,8 @@ Ext.define("TSTestCaseSummary", {
         this.setLoading('Fetching records...');
 
         Deft.Chain.pipeline([
-            function() { return me._makeTestCaseStore(timebox); },
-            me._buildGroupedGrid
+            function() { return me._fetchTestCases(timebox); },
+            me._updateDisplay
         ],this).then({
             success: function(results) {
                 //this.logger.log('results:', results);
@@ -95,7 +99,7 @@ Ext.define("TSTestCaseSummary", {
         return this._loadArtifactRecords(config);
     },
 
-    _makeTestCaseStore: function(timebox) {
+    _fetchTestCases: function(timebox) {
         var config = {
             model: 'TestCase',
             fetch: this.testCaseFetch,
@@ -109,7 +113,7 @@ Ext.define("TSTestCaseSummary", {
             }
         };
 
-        return this._loadAStoreWithAPromise(config);
+        return this._loadWsapiRecords(config);
     },
 
     _getTestCaseFilters: function(timebox) {
@@ -140,7 +144,7 @@ Ext.define("TSTestCaseSummary", {
             fetch: ['ObjectID'],
             enablePostGet: true
         };
-        this.logger.log("Starting load:",config.models);
+        this.logger.log("Starting artifact load:",config.models);
         Ext.create('Rally.data.wsapi.artifact.Store', Ext.Object.merge(default_config,config)).load({
             callback : function(records, operation, successful) {
                 if (successful){
@@ -154,17 +158,24 @@ Ext.define("TSTestCaseSummary", {
         return deferred.promise;
     },
 
-    _buildGroupedGrid: function(store){
+    _updateSummary: function(testcases) {
+        console.log('updateSummary', testcases);
+        var cases_run = _.filter(testcases, function(tc){ return tc.get('LastVerdict');});
+        this.down('#summary_box').update({casesRun: cases_run.length, totalCases: testcases.length });
+    },
+
+    _updateDisplay: function(testcases){
         var container = this.down('#display_box');
         container.removeAll();
+        this._updateSummary(testcases);
 
-        this.logger.log('_buildGroupedGrid', store);
-
-        if (store && store.totalCount > 2000){
-            Rally.ui.notify.Notifier.showWarning({
-                message: Ext.String.format("{0} Test Cases were found, but only 2000 are shown.", store.totalCount)
-            });
-        }
+        var store = Ext.create('Rally.data.custom.Store',{
+            data: testcases,
+            groupField: 'Type',
+            getGroupString: function(record) {
+                return record.get('Type') + ' : ' + record.get('Method');
+            }
+        });
 
         container.add({
             xtype: 'rallygrid',
@@ -247,9 +258,10 @@ Ext.define("TSTestCaseSummary", {
         var default_config = {
             model: 'Defect',
             fetch: ['ObjectID'],
-            enablePostGet: true
+            enablePostGet: true,
+            autoLoad: false
         };
-        this.logger.log("Starting load:",config.model);
+        this.logger.log("Creating store for :",config.model);
         Ext.create('Rally.data.wsapi.Store', Ext.Object.merge(default_config,config)).load({
             callback : function(records, operation, successful) {
                 if (successful){
@@ -281,5 +293,4 @@ Ext.define("TSTestCaseSummary", {
     isExternal: function(){
         return typeof(this.getAppId()) == 'undefined';
     }
-
 });
