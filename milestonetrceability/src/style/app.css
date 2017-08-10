@@ -39,3 +39,8 @@
     border-image-outset: initial;
     border-image-repeat: initial;
 }
+
+.ts-trace-heading {
+    font-size: 14px;
+    font-family: arial, sans-serif
+}

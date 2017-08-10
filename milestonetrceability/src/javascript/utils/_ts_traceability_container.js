@@ -80,13 +80,25 @@ Ext.define('CArABU.container.TraceabilityContainer',{
     },
 
     _getArtifactSummaryTemplate: function() {
-        return new Ext.XTemplate('<a target="_top" href="{[this.getUrl(values)]}">{FormattedID} {Name}</a>' +
+        return new Ext.XTemplate('<span class="ts-trace-heading"><a target="_top" href="{[this.getUrl(values)]}">{FormattedID} {Name}</a>' +
             ' - ( Plan Estimate: {PlanEstimate} )' +
-            ' - {ScheduleState}',
+            ' - {ScheduleState} {[this.getFeatureInfo(values)]}' +
+            '</span>',
             {
                 getUrl: function(object) {
                     console.log(object);
                     return Rally.nav.Manager.getDetailUrl(object);
+                },
+                getFeatureInfo: function(object) {
+                    var feature = object.PortfolioItem;
+                    if ( Ext.isEmpty(feature) ) {
+                        return "";
+                    }
+                    return Ext.String.format('(<a target="_top" href="{0}">{1} - {2}</a>)',
+                        Rally.nav.Manager.getDetailUrl(feature),
+                        feature.FormattedID,
+                        feature._refObjectName
+                    );
                 }
             }
         );
@@ -130,7 +142,7 @@ Ext.define('CArABU.container.TraceabilityContainer',{
                 flex: 1,
                 renderer: function(value,meta,record){
                     var link = Rally.nav.Manager.getDetailUrl(record);
-                    
+
                     return Ext.String.format('<a target="_top" href="{0}">{1} - {2}</a>',
                         link,
                         record.get('FormattedID'),

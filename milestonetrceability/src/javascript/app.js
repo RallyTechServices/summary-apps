@@ -71,7 +71,7 @@ Ext.define("TSMilestoneTraceability", {
     _loadAssociatedStories: function(timebox) {
         var config = {
             model: 'HierarchicalRequirement',
-            fetch: ['ObjectID','Name','FormattedID','ScheduleState','PlanEstimate'],
+            fetch: ['ObjectID','Name','FormattedID','ScheduleState','PlanEstimate','PortfolioItem'],
             filters: [{property:'Milestones',operator:'contains',value:timebox.get('_ref')}],
             limit: Infinity,
             pageSize: 2000
