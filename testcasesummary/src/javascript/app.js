@@ -185,7 +185,14 @@ Ext.define("TSTestCaseSummary", {
             pageSize: 2000,
             columnCfgs: this._getColumnCfgs(),
             showPagingToolbar: false,
-            features: [{ftype:'grouping'}],
+            //features: [{ftype:'grouping'}],
+            features: [{
+                id: 'group',
+                ftype:'groupingsummary',
+                groupHeaderTpl: '{name}',
+                hideGroupedHeader: true,
+                enableGroupingMenu: false
+            }]
         });
     },
 
@@ -194,8 +201,11 @@ Ext.define("TSTestCaseSummary", {
         return [{
             dataIndex: 'FormattedID',
             text: 'ID',
-            flex: 1
-        },{
+            flex: 1,
+            summaryType: 'count',
+            summaryRenderer: function(value){
+                return Ext.String.format('{0} Test Cases', value);
+        }},{
             dataIndex: 'Name',
             text: 'Test Case',
             flex: 2
