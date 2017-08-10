@@ -12,6 +12,7 @@ Ext.define("TSTestCaseSummary", {
             { xtype: 'container', itemId:'selector_box'},
             { xtype: 'container', tpl: new CArABU.technicalservices.ProgressBarTemplate({}), itemId: 'summary_box', margin: '0 100 0 100', flex: 1 }
         ]},
+        {xtype:'container',itemId:'advanced_filter_box'},
         {xtype:'container',itemId:'display_box'}
     ],
 
@@ -30,9 +31,11 @@ Ext.define("TSTestCaseSummary", {
     launch: function() {
         var timeboxScope = this.getContext().getTimeboxScope();
 
+        this._addFilter(this.down('#selector_box'));
+
         if ( !timeboxScope || ( timeboxScope.type != "milestone" )) {
             this.timebox_type = this.getSetting('timeboxType') || 'milestone';
-            this._addSelectors(this.down('#selector_box'), this.timebox_type);
+            this._addTimeboxSelector(this.down('#selector_box'), this.timebox_type );
             return;
         }
         this._updateData(timeboxScope);
@@ -44,7 +47,7 @@ Ext.define("TSTestCaseSummary", {
         this._updateData(timebox);
     },
 
-    _addSelectors: function(container,timebox_type) {
+    _addTimeboxSelector: function(container,timebox_type) {
         if ( timebox_type == "milestone" ) {
             container.add({
                 xtype: 'rallymilestonecombobox',
@@ -64,9 +67,34 @@ Ext.define("TSTestCaseSummary", {
         }
     },
 
+    _addFilter: function(container) {
+        container.add({
+            xtype: 'rallyinlinefilterbutton',
+            modelNames: ['TestCase'],
+            context: this.getContext(),
+            listeners: {
+                inlinefilterready: this._addInlineFilterPanel,
+                inlinefilterchange: this._updateFilters,
+                scope: this
+            }
+        });
+    },
+
+    _addInlineFilterPanel: function(panel) {
+        this.down('#advanced_filter_box').add(panel);
+    },
+
+    _updateFilters: function(filter) {
+        this.logger.log('updateFilters',filter);
+        if ( this.lastTimebox ) {
+            this._updateData(this.lastTimebox);
+        }
+    },
+
     _updateData: function(timebox_selector){
         var me = this,
             timebox = timebox_selector.getRecord();
+        this.lastTimebox = timebox_selector;
 
         if ( timebox && timebox.get('_type') ) {
             this.timebox_type = timebox.get('_type');
@@ -117,15 +145,29 @@ Ext.define("TSTestCaseSummary", {
     },
 
     _getTestCaseFilters: function(timebox) {
+        var filters = null;
+
+        var filterButton = this.down('rallyinlinefilterbutton');
+        if (filterButton && filterButton.inlineFilterPanel && filterButton.getWsapiFilter()){
+            filters = filterButton.getWsapiFilter();
+        }
+
+        this.logger.log("Has filter: ", this.filter);
         if ( this.timebox_type == "release" ) {
             // TODO: This doesn't work.  Use Kristy's method to get releases
-            return Rally.data.wsapi.Filter.or([
+            var release_filter = Rally.data.wsapi.Filter.or([
                 {property:"WorkProduct.Release.Name", value:timebox.get('_refObjectName')},
                 {property:"TestSets.Release.Name",value:timebox.get('_refObjectName')}
             ]);
+            if ( filters ) { return filters.and(release_filter); }
+            return release_filter;
         } else {
             // milestone
-            return [{property:"Workproduct.Milestones",operator:'contains',value:timebox.get('_ref')}];
+            var milestone_filter = Rally.data.wsapi.Filter.and([
+                {property:"Workproduct.Milestones",operator:'contains',value:timebox.get('_ref')}
+            ]);
+            if ( filters ) { return filters.and(milestone_filter); }
+            return milestone_filter;
         }
 
     },
