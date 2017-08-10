@@ -13,7 +13,18 @@ Ext.define("TSMilestoneTraceability", {
     },
 
     launch: function() {
-        this._addSelectors(this.down('#selector_box'));
+        var timeboxScope = this.getContext().getTimeboxScope();
+
+        if ( !timeboxScope || timeboxScope.type != "milestone" ) {
+            this._addSelectors(this.down('#selector_box'));
+            return;
+        }
+        this._updateData(timeboxScope);
+    },
+
+    onTimeboxScopeChange: function(timebox) {
+        this.down('#display_box').removeAll();
+        this._updateData(timebox);
     },
 
     _addSelectors: function(container) {

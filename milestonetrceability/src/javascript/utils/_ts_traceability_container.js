@@ -86,7 +86,6 @@ Ext.define('CArABU.container.TraceabilityContainer',{
             '</span>',
             {
                 getUrl: function(object) {
-                    console.log(object);
                     return Rally.nav.Manager.getDetailUrl(object);
                 },
                 getFeatureInfo: function(object) {
