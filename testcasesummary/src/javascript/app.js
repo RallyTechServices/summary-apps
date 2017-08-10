@@ -25,8 +25,19 @@ Ext.define("TSTestCaseSummary", {
     },
 
     launch: function() {
-        this.timebox_type = this.getSetting('timeboxType') || 'milestone';
-        this._addSelectors(this.down('#selector_box'), this.timebox_type);
+        var timeboxScope = this.getContext().getTimeboxScope();
+
+        if ( !timeboxScope || ( timeboxScope.type != "milestone" )) {
+            this.timebox_type = this.getSetting('timeboxType') || 'milestone';
+            this._addSelectors(this.down('#selector_box'), this.timebox_type);
+            return;
+        }
+        this._updateData(timeboxScope);
+    },
+
+    onTimeboxScopeChange: function(timebox) {
+        this.down('#display_box').removeAll();
+        this._updateData(timebox);
     },
 
     _addSelectors: function(container,timebox_type) {
@@ -52,7 +63,13 @@ Ext.define("TSTestCaseSummary", {
     _updateData: function(timebox_selector){
         var me = this,
             timebox = timebox_selector.getRecord();
+
+        if ( timebox && timebox.get('_type') ) {
+            this.timebox_type = timebox.get('_type');
+        }
         this.logger.log('Timebox: ', timebox.get('_refObjectName'));
+        this.down('#display_box').removeAll();
+
         this.setLoading('Fetching records...');
 
         Deft.Chain.pipeline([
@@ -60,7 +77,7 @@ Ext.define("TSTestCaseSummary", {
             me._buildGroupedGrid
         ],this).then({
             success: function(results) {
-                this.logger.log('results:', results);
+                //this.logger.log('results:', results);
             },
             failure: function(msg) {
                 Ext.Msg.alert("Problem loading records", msg);
@@ -149,15 +166,15 @@ Ext.define("TSTestCaseSummary", {
             });
         }
 
-        this.add({
+        container.add({
             xtype: 'rallygrid',
             store: store,
             itemId: 'grouped-grid',
             margin: 10,
             pageSize: 2000,
             columnCfgs: this._getColumnCfgs(),
+            showPagingToolbar: false,
             features: [{ftype:'grouping'}],
-
         });
     },
 
