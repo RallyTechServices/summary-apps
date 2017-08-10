@@ -193,6 +193,19 @@ Ext.define("TSTestCaseSummary", {
             text: 'Last Tested',
             flex: 1
         },{
+            dataIndex: 'WorkProduct',
+            text: 'Work Product',
+            flex: 1,
+            renderer: function(value,meta,record){
+                if ( Ext.isEmpty(value) ) { return ""; };
+                return Ext.String.format('<a target="_top" href="{0}">{1} - {2}</a>',
+                    Rally.nav.Manager.getDetailUrl(value),
+                    value.FormattedID,
+                    value._refObjectName
+                );
+            }
+        },
+        {
             dataIndex: 'LastVerdict',
             text: 'Last Verdict',
             flex: 1
