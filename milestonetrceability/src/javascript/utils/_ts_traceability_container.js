@@ -95,6 +95,7 @@ Ext.define('CArABU.container.TraceabilityContainer',{
             columnCfgs: columns,
             store: store,
             flex: 1,
+            cls: 'ts-grid',
             showPagingToolbar: false,
             showRowActionsColumn: false
         });
