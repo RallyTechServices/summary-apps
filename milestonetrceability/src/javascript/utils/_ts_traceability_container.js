@@ -107,10 +107,17 @@ Ext.define('CArABU.container.TraceabilityContainer',{
             'defect': 'State',
             'testcase':'LastVerdict'
         };
+
+        var header_text = {
+            'task': 'Task',
+            'defect': 'Defect',
+            'testcase':'Test'
+        };
+
         var cols = [
             {
                 dataIndex:'FormattedID',
-                text:'ID - Name',
+                text:header_text[type] + ' ID - Name',
                 flex: 1,
                 renderer: function(value,meta,record){
                     return record.get('FormattedID') + ' - ' + record.get('Name');
