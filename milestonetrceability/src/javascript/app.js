@@ -4,8 +4,12 @@ Ext.define("TSMilestoneTraceability", {
     logger: new Rally.technicalservices.Logger(),
     defaults: { margin: 10 },
     items: [
-        {xtype:'container',itemId:'selector_box'},
-        {xtype:'container',itemId:'display_box'}
+        {xtype:'container',layout:'hbox',items:[
+            {xtype:'container',itemId:'selector_box'},
+            {xtype:'container',flex:1},
+            {xtype:'container',itemId:'print_box'}
+        ]},
+        {xtype:'container',itemId:'display_box',width: 900}
     ],
 
     integrationHeaders : {
@@ -15,6 +19,7 @@ Ext.define("TSMilestoneTraceability", {
     launch: function() {
         var timeboxScope = this.getContext().getTimeboxScope();
 
+        this._addPrintButton(this.down('#print_box'));
         if ( !timeboxScope || timeboxScope.type != "milestone" ) {
             this._addSelectors(this.down('#selector_box'));
             return;
@@ -25,6 +30,19 @@ Ext.define("TSMilestoneTraceability", {
     onTimeboxScopeChange: function(timebox) {
         this.down('#display_box').removeAll();
         this._updateData(timebox);
+    },
+
+    _addPrintButton: function(container) {
+        container.add({
+            xtype:'rallybutton',
+            iconCls: 'icon-print',
+            cls: 'secondary rly-small',
+            margin: '10 5 10 5',
+            listeners: {
+                click: this._printPage,
+                scope: this
+            }
+        });
     },
 
     _addSelectors: function(container) {
@@ -198,6 +216,21 @@ Ext.define("TSMilestoneTraceability", {
             }
         });
         return deferred.promise;
+    },
+
+    _printPage: function() {
+        this.logger.log('print');
+        var win = Ext.create('CArABU.utils.PrintWindow',{
+            printContainer: this.down('#display_box'),
+            currentDocument: Ext.getDoc(),
+            title: 'Print Milestone Trace'
+        });
+
+        this.logger.log('after win');
+        win.show();
+        this.logger.log('after show');
+        win.print();
+        this.logger.log('after print');
     },
 
     getOptions: function() {
