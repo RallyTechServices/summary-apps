@@ -9,11 +9,12 @@ Ext.define("TSTestCaseSummary", {
 
     items: [
         {xtype:'container', layout: 'hbox', items: [
-            { xtype: 'container', itemId:'selector_box'},
-            { xtype: 'container', tpl: new CArABU.technicalservices.ProgressBarTemplate({}), itemId: 'summary_box', margin: '0 100 0 100', flex: 1 }
+            {xtype: 'container', itemId:'selector_box'},
+            {xtype: 'container', tpl: new CArABU.technicalservices.ProgressBarTemplate({}), itemId: 'summary_box', margin: '0 100 0 100', flex: 1 },
+            {xtype:'container',itemId:'print_box'}
         ]},
         {xtype:'container',itemId:'advanced_filter_box'},
-        {xtype:'container',itemId:'display_box'}
+        {xtype:'container',itemId:'display_box', width:900}
     ],
 
     artifactModels: ['Defect', 'UserStory','TestSet'],
@@ -31,7 +32,13 @@ Ext.define("TSTestCaseSummary", {
     launch: function() {
         var timeboxScope = this.getContext().getTimeboxScope();
 
+        this._addPrintButton(this.down('#print_box'));
         this._addFilter(this.down('#selector_box'));
+
+        if ( timeboxScope && ( timeboxScope.type != "milestone" && timeboxScope.type != "release" )) {
+            Ext.Msg.alert("","This app is not designed to work on pages of type " + timeboxScope.type);
+            return;
+        }
 
         if ( !timeboxScope || ( timeboxScope.type != "milestone" && timeboxScope.type != "release" )) {
             this.timebox_type = this.getSetting('timeboxType') || 'milestone';
@@ -45,6 +52,19 @@ Ext.define("TSTestCaseSummary", {
         this.down('#display_box').removeAll();
         this.down('#summary_box').update({casesRun: 0, totalCases: 0});
         this._updateData(timebox);
+    },
+
+    _addPrintButton: function(container) {
+        container.add({
+            xtype:'rallybutton',
+            iconCls: 'icon-print',
+            cls: 'secondary rly-small',
+            margin: '10 5 10 5',
+            listeners: {
+                click: this._printPage,
+                scope: this
+            }
+        });
     },
 
     _addTimeboxSelector: function(container,timebox_type) {
@@ -143,6 +163,10 @@ Ext.define("TSTestCaseSummary", {
             scope: this,
             success: function(filters) {
                 this.logger.log("Filters:", filters);
+                if ( Ext.isEmpty(filters) ) {
+                    console.log("No filters!");
+                    return;
+                }
                 var config = {
                     model: 'TestCase',
                     fetch: this.testCaseFetch,
@@ -357,6 +381,17 @@ Ext.define("TSTestCaseSummary", {
             }
         });
         return deferred.promise;
+    },
+
+    _printPage: function() {
+        var win = Ext.create('CArABU.utils.PrintWindow',{
+            printContainer: this.down('#display_box'),
+            currentDocument: Ext.getDoc(),
+            title: 'Print TestCase Summary'
+        });
+
+        win.show();
+        win.print();
     },
 
     getOptions: function() {

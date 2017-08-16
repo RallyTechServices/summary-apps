@@ -69,6 +69,7 @@ Ext.define('CArABU.container.TraceabilityContainer',{
                  var grid_box = container.add({
                       xtype:'container',
                       layout: 'hbox',
+                      cls: 'pb',
                       defaults: { margin: 5, padding: 5 },
                       html:''
                  });
