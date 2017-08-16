@@ -4,11 +4,16 @@
 
 ![screenshot](./images/screenshot.png "This is an example")
 
-Given a milestone, this app finds the user stories **directly** associated with the milesone and prints out some information about the story, plus a summary of tasks, test cases, and defects associated directly with that story.
+Given a milestone, this app finds the user stories **directly** associated with the milestone and prints out some information about the story, plus a summary of tasks, test cases, and defects associated directly with that story.
+
+This app will react to page-level timebox scoping if that is set to Milestone.  Otherwise,
+it will put a selector for milestone onto the app itself.  (The selector will not be printed.)
+
 
 ## Development Notes
 
 * This does not look to see if a feature or a parent story has the milestone.  Only the stories that are directly related to the milestones.
+* The app limits the width to 900 so that printing can print what is directly on the screen.
 
 ### First Load
 
