@@ -300,6 +300,12 @@ Ext.define("TSTestCaseSummary", {
             dataIndex: 'FormattedID',
             text: 'ID',
             flex: 1,
+            renderer: function(value,meta,record) {
+                return Ext.String.format('<a target="_top" href="{0}">{1}</a>',
+                    Rally.nav.Manager.getDetailUrl(record),
+                    value
+                );
+            },
             summaryType: 'count',
             summaryRenderer: function(value){
                 return Ext.String.format('{0} Test Cases', value);
