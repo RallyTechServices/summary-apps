@@ -112,13 +112,13 @@ Ext.define('CArABU.container.TraceabilityContainer',{
 
         var html = "<table class='child-table'><tbody>";
 
-        html += "<tr>";
+        html += "<thead><tr>";
         Ext.Array.each(columns, function(column){
             html += "<th>" +
                 column.text +
                 "</th>";
         });
-        html += "</tr>";
+        html += "</tr></thead>";
 
         Ext.Array.each(data, function(child){
             html += "<tr>";

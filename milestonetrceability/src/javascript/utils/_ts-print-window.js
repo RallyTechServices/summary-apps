@@ -37,7 +37,7 @@ Ext.define('CArABU.utils.PrintWindow',{
 
     _buildHTML: function() {
         if ( !this.printContainer ) { return "Nothing to print"; }
-        return this.printContainer.getEl().dom.innerHTML;
+        return this.printContainer.getEl().dom.outerHTML;
     },
 
     _getStyleSheet: function(styleTitle) {

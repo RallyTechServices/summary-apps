@@ -16,8 +16,10 @@
         font-family: ProximaNova, helvetica, sans-serif;
         font-size: 10px;
         color: #000;
-        width: 900;
     }
+    table { page-break-inside:auto }
+    tr    { page-break-inside:avoid; page-break-after:auto }
+    thead { display:table-header-group }
 }
 
 #interface, #printSection {
@@ -36,18 +38,11 @@ body {
     font-family: ProximaNova, helvetica, sans-serif;
     font-size: 10px;
     color: #000;
-    width: 900;
 }
 
 table { page-break-inside:auto }
 tr    { page-break-inside:avoid; page-break-after:auto }
 thead { display:table-header-group }
-
-body {
-    background-color: #fff;
-    color: #000;
-    width: 900px;
-}
 
 table.child-table th, table.child-table td {
     width: 135px;
