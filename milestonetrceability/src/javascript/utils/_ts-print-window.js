@@ -51,10 +51,9 @@ Ext.define('CArABU.utils.PrintWindow',{
         }
         var elems = this.currentDocument.query('style');
         for (var i=0; i< elems.length; i++){
-            if (elems[i].title == styleTitle) {
+            //if (elems[i].title == styleTitle) {
                 style_sheet += Ext.String.format("<style type='text/css'>{0}</style>", elems[i].innerHTML);
-            }
-
+            //}
         }
         return style_sheet;
     }

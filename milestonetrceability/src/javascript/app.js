@@ -4,12 +4,12 @@ Ext.define("TSMilestoneTraceability", {
     logger: new Rally.technicalservices.Logger(),
     defaults: { margin: 10 },
     items: [
-        {xtype:'container',layout:'hbox',items:[
+        {xtype:'container',layout:'hbox',width: 900, padding: 15, items:[
             {xtype:'container',itemId:'selector_box'},
             {xtype:'container',flex:1},
             {xtype:'container',itemId:'print_box'}
         ]},
-        {xtype:'container',itemId:'display_box',width: 900}
+        {xtype:'container',itemId:'display_box',width:900}
     ],
 
     integrationHeaders : {

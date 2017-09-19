@@ -73,6 +73,7 @@ Ext.define('CArABU.container.TraceabilityContainer',{
                       defaults: { margin: 5, padding: 5 },
                       html:''
                  });
+
                  grid_box.add(this._getGridFor('task',artifact));
                  grid_box.add(this._getGridFor('defect',artifact));
                  grid_box.add(this._getGridFor('testcase',artifact));
@@ -107,19 +108,49 @@ Ext.define('CArABU.container.TraceabilityContainer',{
     _getGridFor: function(type,artifact){
         var fieldname = "__" + type + "s";
         var columns = this._getColumns(type);
-        var store = Ext.create('Rally.data.custom.Store',{
-            data: artifact.get(fieldname)
+        var data = artifact.get(fieldname);
+
+        var html = "<table class='child-table'><tbody>";
+
+        html += "<tr>";
+        Ext.Array.each(columns, function(column){
+            html += "<th>" +
+                column.text +
+                "</th>";
+        });
+        html += "</tr>";
+
+        Ext.Array.each(data, function(child){
+            html += "<tr>";
+            Ext.Array.each(columns, function(column){
+                html += "<td>";
+                var field = column.dataIndex;
+                var value = child.get(field);
+                if ( Ext.isFunction(column.renderer) ) {
+                    html += column.renderer(value,null,child);
+                } else {
+                    html += value;
+                }
+                html += "</td>";
+            });
+            html += "<tr>";
         });
 
-        return( {
-            xtype:'rallygrid',
-            columnCfgs: columns,
-            store: store,
-            flex: 1,
-            cls: 'ts-grid',
-            showPagingToolbar: false,
-            showRowActionsColumn: false
-        });
+        html += "</tbody></table>";
+        return {
+            xtype:'container',
+            html: html
+        };
+
+        // return( {
+        //     xtype:'rallygrid',
+        //     columnCfgs: columns,
+        //     store: store,
+        //     flex: 1,
+        //     cls: 'ts-grid',
+        //     showPagingToolbar: false,
+        //     showRowActionsColumn: false
+        // });
     },
 
     _getColumns: function(type) {

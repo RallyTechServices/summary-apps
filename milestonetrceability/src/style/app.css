@@ -17,38 +17,4 @@
     cursor: pointer;
 }
 
-body {
-    background-color: #fff;
-    color: #000;
-    width: 900;
-}
-
-.ts-grid .x-grid-header-ct {
-    background-color: #e4ecee;
-}
-
-.ts-grid.x-panel, .x-grid-cell-inner, .x-column-header-inner {
-    border-top-color: rgb(136, 136, 136);
-    border-top-style: inset;
-    border-top-width: 1px;
-    border-right-color: rgb(136, 136, 136);
-    border-right-style: inset;
-    border-right-width: 1px;
-    border-bottom-color: rgb(136, 136, 136);
-    border-bottom-style: inset;
-    border-bottom-width: 1px;
-    border-left-color: rgb(136, 136, 136);
-    border-left-style: inset;
-    border-left-width: 1px;
-    border-image-source: initial;
-    border-image-slice: initial;
-    border-image-width: initial;
-    border-image-outset: initial;
-    border-image-repeat: initial;
-}
-
-.ts-trace-heading {
-    font-size: 14px;
-    font-family: arial, sans-serif
-}
-</style>
+<style type="text/css">
