@@ -12,10 +12,6 @@ Ext.define("TSMilestoneTraceability", {
         {xtype:'container',itemId:'display_box',width:900}
     ],
 
-    integrationHeaders : {
-        name : "TSMilestoneTraceability"
-    },
-
     launch: function() {
         var timeboxScope = this.getContext().getTimeboxScope();
 
@@ -154,7 +150,9 @@ Ext.define("TSMilestoneTraceability", {
             success: function(results) {
                 var items_by_parent_oid = {};
                 Ext.Array.each(results, function(result) {
-                    var parent_oid = result.get(parent_field).ObjectID;
+                    var parent = result.get(parent_field);
+                    if ( !parent ) { return; }
+                    var parent_oid = parent.ObjectID;
                     if ( Ext.isEmpty(items_by_parent_oid[parent_oid]) ) {
                         items_by_parent_oid[parent_oid] = [];
                     }
@@ -183,7 +181,9 @@ Ext.define("TSMilestoneTraceability", {
             success: function(results) {
                 var items_by_parent_oid = {};
                 Ext.Array.each(results, function(result) {
-                    var parent_oid = result.get(parent_field).ObjectID;
+                    var parent = result.get(parent_field);
+                    if ( !parent ) { return; }
+                    var parent_oid = parent.ObjectID;
                     if ( Ext.isEmpty(items_by_parent_oid[parent_oid]) ) {
                         items_by_parent_oid[parent_oid] = [];
                     }
