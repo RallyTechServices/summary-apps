@@ -72,9 +72,10 @@ Ext.define('CArABU.container.TraceabilityContainer',{
                       html:''
                  });
 
-                 grid_box.add(this._getGridFor('task',artifact));
-                 grid_box.add(this._getGridFor('defect',artifact));
-                 grid_box.add(this._getGridFor('testcase',artifact));
+                 grid_box.add(this._getBigGridFor(artifact));
+                //  grid_box.add(this._getGridFor('task',artifact));
+                //  grid_box.add(this._getGridFor('defect',artifact));
+                //  grid_box.add(this._getGridFor('testcase',artifact));
             }
         },this);
     },
@@ -100,6 +101,66 @@ Ext.define('CArABU.container.TraceabilityContainer',{
                 }
             }
         );
+    },
+
+    _getBigGridFor: function(artifact) {
+        var tasks = artifact.get("__tasks");
+        var task_length = tasks.length || 0;
+        var defects = artifact.get("__defects");
+        var defect_length = defects.length || 0;
+        var tests = artifact.get("__testcases");
+        var test_length = tests.length || 0;
+
+        var max_length = Ext.Array.max([task_length,defect_length,test_length]);
+
+        var records = [];
+        for ( var i=0;i<max_length;i++) {
+            var record = { task: null, defect: null, testcase: null };
+            if ( i < task_length ) { record.task = tasks[i]; }
+            if ( i < defect_length ) { record.defect = defects[i]; }
+            if ( i < test_length ) { record.testcase = tests[i]; }
+            records.push(record);
+        }
+
+        var columns = this._getAllColumns();
+
+        var html = "<table class='child-table'><tbody>";
+
+        html += "<thead><tr>";
+        Ext.Array.each(columns, function(column){
+            html += "<th>" +
+                column.text +
+                "</th>";
+        });
+        html += "</tr></thead>";
+
+        Ext.Array.each(records, function(child){
+            html += "<tr>";
+            Ext.Array.each(columns, function(column){
+                html += "<td>";
+                var field = column.dataIndex;
+                var value = child[field];
+                if ( Ext.isFunction(column.renderer) ) {
+                    html += column.renderer(value,null,child);
+                } else {
+                    html += value;
+                }
+                html += "</td>";
+            });
+            html += "<tr>";
+        });
+
+html += "</tbody></table>";
+
+        return {
+            xtype:'container',
+            html: html
+        };
+    },
+
+    _getEmptyRecord: function(){
+        var record = {};
+
     },
 
     _getGridFor: function(type,artifact){
@@ -148,6 +209,53 @@ Ext.define('CArABU.container.TraceabilityContainer',{
         //     showPagingToolbar: false,
         //     showRowActionsColumn: false
         // });
+    },
+
+    _getAllColumns: function() {
+        var types = ['task','defect','testcase'];
+        var state_fields = {
+            'task': 'State',
+            'defect': 'State',
+            'testcase':'LastVerdict'
+        };
+
+        var header_text = {
+            'task': 'Task',
+            'defect': 'Defect',
+            'testcase':'Test'
+        };
+
+        var cols =[];
+
+        Ext.Array.each(types, function(type){
+            cols.push({
+                dataIndex: type,
+                text:header_text[type] + ' ID - Name',
+                flex: 1,
+                renderer: function(record,meta,row){
+                    if ( ! record) {
+                        return "";
+                    }
+                    var link = Rally.nav.Manager.getDetailUrl(record);
+
+                    return Ext.String.format('<a target="_top" href="{0}">{1} - {2}</a>',
+                        link,
+                        record.get('FormattedID'),
+                        record.get('Name')
+                    );
+                }
+            });
+            cols.push({
+                dataIndex:type,
+                text:'State',
+                renderer: function(record,meta,row) {
+                    if ( !record ) { return ""; }
+                    return record.get(state_fields[type]);
+                }
+            });
+        });
+
+        return cols;
     },
 
     _getColumns: function(type) {
