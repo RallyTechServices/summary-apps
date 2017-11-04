@@ -58,13 +58,11 @@ Ext.define('CArABU.container.TraceabilityContainer',{
             var subcontainer = container.add({
                 xtype:'container',
                 html: '',
-         //       layout: 'hbox',
                 defaults: { margins: 5, padding: 5 }
             });
 
             if ( !this._hasChildren(artifact) ) {
                 subcontainer.update('No Children Artifacts');
-                //container.add({xtype:'container',html:'No Children Artifacts'});
             } else {
                  var grid_box = container.add({
                       xtype:'container',
@@ -95,10 +93,9 @@ Ext.define('CArABU.container.TraceabilityContainer',{
                     if ( Ext.isEmpty(feature) ) {
                         return "";
                     }
-                    return Ext.String.format('(<a target="_top" href="{0}">{1} - {2}</a>)',
+                    return Ext.String.format('(<a target="_top" href="{0}">{1}</a>)',
                         Rally.nav.Manager.getDetailUrl(feature),
-                        feature.FormattedID,
-                        feature._refObjectName
+                        feature.FormattedID
                     );
                 }
             }
