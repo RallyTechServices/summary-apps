@@ -56,7 +56,14 @@ table.child-table tr {
     display:table-row;
 }
 
-table.child-table, table.child-table tr, table.child-table th, table.child-table td {
+table.child-table {
+    border-top-color: rgb(136, 136, 136);
+    border-top-style: inset;
+    border-top-width: 1px;
+
+}
+
+table.child-table tr, table.child-table th, table.child-table td {
     border-top-color: rgb(136, 136, 136);
     border-top-style: inset;
     border-top-width: 1px;

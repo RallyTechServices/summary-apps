@@ -3,13 +3,13 @@
 <head>
     <title>CATS Milestone Traceability 1.1</title>
     <!--  (c) 2017 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Fri Nov 03 2017 18:35:37 GMT-0700 (PDT) -->
+    <!--  Build Date: Thu Nov 09 2017 18:10:36 GMT-0800 (PST) -->
 
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Fri Nov 03 2017 18:35:37 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Thu Nov 09 2017 18:10:36 GMT-0800 (PST)";
         var STORY    = "US1684";
         var BUILDER  = "marjo60";
-        var CHECKSUM = 9438225754;
+        var CHECKSUM = 9539464598;
     </script>
 
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -108,7 +108,14 @@ table.child-table tr {
     display:table-row;
 }
 
-table.child-table, table.child-table tr, table.child-table th, table.child-table td {
+table.child-table {
+    border-top-color: rgb(136, 136, 136);
+    border-top-style: inset;
+    border-top-width: 1px;
+
+}
+
+table.child-table tr, table.child-table th, table.child-table td {
     border-top-color: rgb(136, 136, 136);
     border-top-style: inset;
     border-top-width: 1px;
