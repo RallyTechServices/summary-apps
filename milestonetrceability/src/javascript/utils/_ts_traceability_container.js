@@ -128,8 +128,13 @@ Ext.define('CArABU.container.TraceabilityContainer',{
 
         html += "<thead><tr>";
         Ext.Array.each(columns, function(column){
-            html += "<th>" +
-                column.text +
+            if ( column.width ) {
+                html += '<th style="width:' + column.width + ';">';
+            } else {
+                html += "<th>";
+            }
+            
+            html += column.text +
                 "</th>";
         });
         html += "</tr></thead>";
@@ -150,7 +155,7 @@ Ext.define('CArABU.container.TraceabilityContainer',{
             html += "<tr>";
         });
 
-html += "</tbody></table>";
+        html += "</tbody></table>";
 
         return {
             xtype:'container',
@@ -227,9 +232,10 @@ html += "</tbody></table>";
 
         var cols =[];
 
-        Ext.Array.each(types, function(type){
+        Ext.Array.each(types, function(type,idx){
             cols.push({
                 dataIndex: type,
+                width: "33%",
                 text:header_text[type] + ' ID - Name',
                 flex: 1,
                 renderer: function(record,meta,row){
@@ -248,11 +254,22 @@ html += "</tbody></table>";
             cols.push({
                 dataIndex:type,
                 text:'State',
+                width: 50,
                 renderer: function(record,meta,row) {
                     if ( !record ) { return ""; }
                     return record.get(state_fields[type]);
                 }
             });
+            if ( idx != 2 ) {
+                cols.push({
+                    dataIndex: type,
+                    width: "0px",
+                    text: ' ',
+                    renderer: function(record,meta,row) {
+                        return " ";
+                    }
+                });
+            }
         });
 
         return cols;
