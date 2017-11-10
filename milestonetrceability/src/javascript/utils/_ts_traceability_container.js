@@ -133,9 +133,8 @@ Ext.define('CArABU.container.TraceabilityContainer',{
             } else {
                 html += "<th>";
             }
-            
-            html += column.text +
-                "</th>";
+
+            html += Ext.String.format("<b>{0}</b></th>", column.text );
         });
         html += "</tr></thead>";
 
